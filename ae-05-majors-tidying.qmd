@@ -34,8 +34,7 @@ statsci
 ```{r}
 #| label: pivot
 
-# add your code here
-  
+statsci |> pivot_longer(cols = -degree, names_to = "year", values_to = "n")  
   
 ```
 
@@ -48,12 +47,12 @@ statsci
 ```{r}
 #| label: pivot-with-transform
 
-# add your code here
+statsci |> pivot_longer(cols = -degree, names_to = "year", names_transform = as.numeric, values_to = "n")  
 ```
 
 -   **Question:** What does an `NA` mean in this context? *Hint:* The data come from the university registrar, and they have records on every single graduates, there shouldn't be anything "unknown" to them about who graduated when.
 
-*Add your response here.*
+They represent 0s for that row entry
 
 -   **Demo:** Add on to your pipeline that you started with pivoting and convert `NA`s in `n` to `0`s.
 
@@ -61,7 +60,7 @@ statsci
 
 #| label: convert-na
 
-# add your code here
+statsci |> pivot_longer(cols = -degree, names_to = "year", names_transform = as.numeric, values_to = "n") |> mutate(n = if_else(is.na(n),0,n)) 
 ```
 
 -   **Demo:** In our plot the degree types are BS, BS2, AB, and AB2. This information is in our dataset, in the `degree` column, but this column also has additional characters we don't need. Create a new column called `degree_type` with levels BS, BS2, AB, and AB2 (in this order) based on `degree`. Do this by adding on to your pipeline from earlier.
@@ -69,7 +68,9 @@ statsci
 ```{r}
 #| label: degree-type
 
-# add your code here
+statsci |> pivot_longer(cols = -degree, names_to = "year", names_transform = as.numeric, values_to = "n") |> mutate(n = if_else(is.na(n),0,n)) |> separate_wider_delim(degree, delim = "(", names = c("Major", "degree_type")) |>
+  mutate(degree_type = str_remove(degree_type, "\\)"),
+         degree_type = fct_relevel(degree_type, "BS","BS2","AB","AB2"))
   
   
 ```
@@ -81,7 +82,12 @@ statsci
 ```{r}
 #| label: plot-draft
 
-# add your code here.
+statsci |> pivot_longer(cols = -degree, names_to = "year", names_transform = as.numeric, values_to = "n") |> mutate(n = if_else(is.na(n),0,n)) |> separate_wider_delim(degree, delim = "(", names = c("Major", "degree_type")) |>
+  mutate(degree_type = str_remove(degree_type, "\\)"),
+         degree_type = fct_relevel(degree_type, "BS","BS2","AB","AB2"))|> ggplot(aes(year, n, color=degree_type)) +
+  scale_x_continuous(breaks = seq(2011, 2023, 2))+
+  geom_line() +
+  geom_point() 
 
 ```
 
@@ -92,8 +98,31 @@ statsci
 -   **Demo:** Update x-axis scale such that the years displayed go from 2011 to 2023 in increments of 2 years. Do this by adding on to your pipeline from earlier.
 
 ```{r}
-#| label: plot-improve-1
-# add your code here
+
+statsci |>
+  pivot_longer(
+    cols = -degree,
+    names_to = "year",
+    names_transform = as.numeric,
+    values_to = "n"
+  ) |>
+  mutate(n = if_else(is.na(n), 0, n)) |>
+  separate_wider_delim(
+    degree,
+    delim = "(",
+    names = c("Major", "degree_type")
+  ) |>
+  mutate(
+    degree_type = str_remove(degree_type, "\\)"),
+    degree_type = fct_relevel(degree_type, "BS", "BS2", "AB", "AB2")
+  ) |>
+  ggplot(aes(year, n, color = degree_type)) +
+  scale_x_continuous(breaks = seq(2011, 2023, 2)) +
+  geom_line() +
+  geom_point()+
+  scale_color_manual(
+  values = c("cadetblue4", "cadetblue3", "lightgoldenrod4", "lightgoldenrod3")
+)
 
 ```
 
@@ -107,23 +136,67 @@ statsci
     -   "AB2" = "lightgoldenrod3"
 
 ```{r}
-#| label: plot-improve-2
 
-# add your code here
+statsci |>
+  pivot_longer(
+    cols = -degree,
+    names_to = "year",
+    names_transform = as.numeric,
+    values_to = "n"
+  ) |>
+  mutate(n = if_else(is.na(n), 0, n)) |>
+  separate_wider_delim(
+    degree,
+    delim = "(",
+    names = c("Major", "degree_type")
+  ) |>
+  mutate(
+    degree_type = str_remove(degree_type, "\\)"),
+    degree_type = fct_relevel(degree_type, "BS", "BS2", "AB", "AB2")
+  ) |>
+  ggplot(aes(year, n, color = degree_type)) +
+  scale_x_continuous(breaks = seq(2011, 2023, 2)) +
+  geom_line() +
+  theme_minimal()+
+  geom_point()+
+  scale_color_manual(
+  values = c("cadetblue4", "cadetblue3", "lightgoldenrod4", "lightgoldenrod3")
+)+
+  labs( x = "Year", y = "Number of Students Graduating", color = "Degree Type", title = "Stastical Sciecne Majors over Years", subtitle="Academic years 2011-2023", caption = "SOURCE:" )
+
 ```
 
--   **Your turn:** Update the plot labels (`title`, `subtitle`, `x`, `y`, and `caption`) and use `theme_minimal()`. Once again, do this by adding on to your pipeline from earlier.
-
-```{r}
-#| label: plot-improve-3
-
-# add your code here
-```
 
 -   **Demo:** Finally, adding to your pipeline you've developed so far, move the legend into the plot, make its background white, and its border gray. Set `fig-width: 7` and `fig-height: 5` for your plot in the chunk options.
 
 ```{r}
 #| label: plot-improve-4
 
-# add your code here
+statsci |>
+  pivot_longer(
+    cols = -degree,
+    names_to = "year",
+    names_transform = as.numeric,
+    values_to = "n"
+  ) |>
+  mutate(n = if_else(is.na(n), 0, n)) |>
+  separate_wider_delim(
+    degree,
+    delim = "(",
+    names = c("Major", "degree_type")
+  ) |>
+  mutate(
+    degree_type = str_remove(degree_type, "\\)"),
+    degree_type = fct_relevel(degree_type, "BS", "BS2", "AB", "AB2")
+  ) |>
+  ggplot(aes(year, n, color = degree_type)) +
+  scale_x_continuous(breaks = seq(2011, 2023, 2)) +
+  geom_line() +
+  theme_minimal()+
+  geom_point()+
+  scale_color_manual(
+  values = c("cadetblue4", "cadetblue3", "lightgoldenrod4", "lightgoldenrod3")
+)+
+  labs( x = "Year", y = "Number of Students Graduating", color = "Degree Type", title = "Stastical Sciecne Majors over Years", subtitle="Academic years 2011-2023", caption = "SOURCE:" )+
+  theme(legend.position = c(0.2,.8), legend.background = element_rect(fill = "white", color = "grey"))
 ```
